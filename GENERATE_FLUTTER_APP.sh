@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # ============================================================================
-# FLUTTER INDUSTRY STANDARD PROJECT GENERATOR v2.0
+# FLUTTER INDUSTRY STANDARD PROJECT GENERATOR v2.1
 # ============================================================================
-# Creates a complete production-ready Flutter project in one command
+# Creates a complete production-ready Flutter project
+# Uses flutter pub add for automatic version compatibility
 # Usage: ./GENERATE_FLUTTER_APP.sh my_app [com.organization]
 # ============================================================================
 
@@ -39,7 +40,7 @@ PROJECT_DIR="$(pwd)/$PROJECT"
 [[ -d "$PROJECT" ]] && error "Directory '$PROJECT' already exists!"
 
 # Display banner
-print_header "Flutter Industry Standard Project Generator v2.0"
+print_header "Flutter Industry Standard Project Generator v2.1"
 echo "  📦 Project Name: $PROJECT"
 echo "  🏢 Organization: $ORG"
 echo "  📱 Flutter Version: $(flutter --version | head -n 1 | awk '{print $2}')"
@@ -60,7 +61,7 @@ echo ""
 # STEP 1: Create Base Project
 # ============================================================================
 
-print_header "STEP 1/8: Creating Base Flutter Project"
+print_header "STEP 1/9: Creating Base Flutter Project"
 log "Running flutter create..."
 flutter create "$PROJECT" --org "$ORG" --platforms=android,ios,web > /dev/null 2>&1
 cd "$PROJECT"
@@ -70,7 +71,7 @@ success "Base project created"
 # STEP 2: Create Folder Structure
 # ============================================================================
 
-print_header "STEP 2/8: Creating Folder Structure"
+print_header "STEP 2/9: Creating Folder Structure"
 log "Creating directories..."
 
 mkdir -p lib/core/{constants,theme,utils,widgets,routes,services}
@@ -81,59 +82,47 @@ mkdir -p assets/images
 success "Folder structure created"
 
 # ============================================================================
-# STEP 3: Update pubspec.yaml
+# STEP 3: Add Dependencies (Compatible Versions)
 # ============================================================================
 
-print_header "STEP 3/8: Configuring Dependencies"
-log "Updating pubspec.yaml..."
+print_header "STEP 3/9: Adding Dependencies"
+log "Using 'flutter pub add' for automatic version compatibility..."
+echo ""
 
-cat > pubspec.yaml << PUBSPEC
-name: $PROJECT
-description: A production-ready Flutter application.
-publish_to: 'none'
-version: 1.0.0+1
+flutter pub add flutter_riverpod 2>&1 | tail -2
+flutter pub add google_fonts 2>&1 | tail -2
+flutter pub add flutter_screenutil 2>&1 | tail -2
+flutter pub add shared_preferences 2>&1 | tail -2
+flutter pub add logger 2>&1 | tail -2
+flutter pub add -d flutter_lints 2>&1 | tail -2
 
-environment:
-  sdk: ^3.5.0
+echo ""
+success "Dependencies added (compatible versions)"
 
-dependencies:
-  flutter:
-    sdk: flutter
-  cupertino_icons: ^1.0.8
+# ============================================================================
+# STEP 4: Configure Assets
+# ============================================================================
 
-  # State Management
-  flutter_riverpod: ^2.6.1
+print_header "STEP 4/9: Configuring Assets"
+log "Adding assets to pubspec.yaml..."
 
-  # UI & Styling
-  google_fonts: ^6.2.1
-  flutter_screenutil: ^5.10.0
-
-  # Utilities
-  shared_preferences: ^2.5.3
-  logger: ^2.5.0
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^5.0.0
-
-flutter:
-  uses-material-design: true
-  assets:
+# Add assets if not already present
+if ! grep -q "  assets:" pubspec.yaml; then
+    # Find the flutter: section and add assets
+    sed -i.bak '/^flutter:/a\
+  assets:\
     - assets/images/
-PUBSPEC
+' pubspec.yaml && rm pubspec.yaml.bak
+fi
 
-log "Installing dependencies..."
-flutter pub get > /dev/null 2>&1
-success "Dependencies configured"
+success "Assets configured"
 
 # ============================================================================
-# STEP 4: Generate Core Files
+# STEP 5: Generate Core Constants
 # ============================================================================
 
-print_header "STEP 4/8: Generating Core Files"
+print_header "STEP 5/9: Generating Core Files"
 
-# app_colors.dart
 log "Creating app_colors.dart..."
 cat > lib/core/constants/app_colors.dart << 'EOF'
 import 'package:flutter/material.dart';
@@ -171,7 +160,6 @@ class AppColors {
 }
 EOF
 
-# app_sizes.dart
 log "Creating app_sizes.dart..."
 cat > lib/core/constants/app_sizes.dart << 'EOF'
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -214,12 +202,11 @@ EOF
 success "Core constants created"
 
 # ============================================================================
-# STEP 5: Generate Theme Files
+# STEP 6: Generate Theme System
 # ============================================================================
 
-print_header "STEP 5/8: Generating Theme System"
+print_header "STEP 6/9: Generating Theme System"
 
-# app_theme.dart
 log "Creating app_theme.dart..."
 cat > lib/core/theme/app_theme.dart << 'EOF'
 import 'package:flutter/material.dart';
@@ -299,7 +286,7 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: AppSizes.elevation,
         shape: RoundedRectangleBorder(
@@ -314,12 +301,11 @@ EOF
 success "Theme system created"
 
 # ============================================================================
-# STEP 6: Generate Utility Files
+# STEP 7: Generate Utility Files
 # ============================================================================
 
-print_header "STEP 6/8: Generating Utility Files"
+print_header "STEP 7/9: Generating Utility Files"
 
-# validators.dart
 log "Creating validators.dart..."
 cat > lib/core/utils/validators.dart << 'EOF'
 class Validators {
@@ -372,7 +358,6 @@ class Validators {
 }
 EOF
 
-# responsive.dart
 log "Creating responsive.dart..."
 cat > lib/core/utils/responsive.dart << 'EOF'
 import 'package:flutter/material.dart';
@@ -404,16 +389,14 @@ EOF
 
 success "Utility files created"
 
+# Continue in next message...
+
 # ============================================================================
-# STEP 7: Generate Widget Library
+# STEP 8: Generate Widget Library
 # ============================================================================
 
-print_header "STEP 7/8: Generating Widget Library"
+print_header "STEP 8/9: Generating Widget Library"
 
-# Continue in next part...
-echo "Generating widgets..."
-
-# primary_button.dart
 log "Creating primary_button.dart..."
 cat > lib/core/widgets/buttons/primary_button.dart << 'WIDGET_EOF'
 import 'package:flutter/material.dart';
@@ -466,7 +449,6 @@ class PrimaryButton extends StatelessWidget {
 }
 WIDGET_EOF
 
-# app_text_field.dart
 log "Creating app_text_field.dart..."
 cat > lib/core/widgets/inputs/app_text_field.dart << 'WIDGET_EOF'
 import 'package:flutter/material.dart';
@@ -528,7 +510,6 @@ class AppTextField extends StatelessWidget {
 }
 WIDGET_EOF
 
-# loading_indicator.dart
 log "Creating loading_indicator.dart..."
 cat > lib/core/widgets/common/loading_indicator.dart << 'WIDGET_EOF'
 import 'package:flutter/material.dart';
@@ -564,12 +545,11 @@ WIDGET_EOF
 success "Widget library created (3 widgets)"
 
 # ============================================================================
-# STEP 8: Generate Feature Pages
+# STEP 9: Generate Feature Pages & Main.dart
 # ============================================================================
 
-print_header "STEP 8/8: Generating Feature Pages"
+print_header "STEP 9/9: Generating Feature Pages"
 
-# splash_page.dart
 log "Creating splash_page.dart..."
 cat > lib/features/splash/presentation/pages/splash_page.dart << 'PAGE_EOF'
 import 'package:flutter/material.dart';
@@ -638,7 +618,6 @@ class _SplashPageState extends State<SplashPage> {
 }
 PAGE_EOF
 
-# home_page.dart
 log "Creating home_page.dart..."
 cat > lib/features/home/presentation/pages/home_page.dart << 'PAGE_EOF'
 import 'package:flutter/material.dart';
@@ -709,7 +688,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 SizedBox(height: AppSizes.spacingSmall),
                 Text(
-                  'Your Flutter app is ready with industry-standard architecture, responsive design, and pre-built components.',
+                  'Your Flutter app is ready with industry-standard architecture.',
                   style: TextStyle(
                     fontSize: AppSizes.body,
                     color: AppColors.textSecondary,
@@ -743,8 +722,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                   icon: Icons.check,
                   onPressed: _handleSubmit,
                 ),
-                SizedBox(height: AppSizes.spacingLarge * 2),
-                _buildFeatureList(),
               ],
             ),
           ),
@@ -752,66 +729,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
-
-  Widget _buildFeatureList() {
-    final features = [
-      'Clean Architecture (Feature-First)',
-      'Riverpod State Management',
-      'Responsive Design System',
-      'Pre-built Widget Library',
-      'Form Validation',
-      'Theme System',
-      'Best Practices',
-    ];
-
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(AppSizes.spacing),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Included Features:',
-              style: TextStyle(
-                fontSize: AppSizes.h4,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: AppSizes.spacing),
-            ...features.map((feature) => Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.spacingSmall),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: AppSizes.iconSmall,
-                        color: AppColors.success,
-                      ),
-                      SizedBox(width: AppSizes.spacingSmall),
-                      Expanded(
-                        child: Text(
-                          feature,
-                          style: TextStyle(fontSize: AppSizes.bodySmall),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-          ],
-        ),
-      ),
-    );
-  }
 }
 PAGE_EOF
-
-success "Feature pages created"
-
-# ============================================================================
-# STEP 9: Update main.dart
-# ============================================================================
-
-print_header "Finalizing Setup"
 
 log "Updating main.dart..."
 cat > lib/main.dart << 'MAIN_EOF'
@@ -847,7 +766,7 @@ class MyApp extends StatelessWidget {
 }
 MAIN_EOF
 
-success "main.dart updated"
+success "Feature pages and main.dart created"
 
 # ============================================================================
 # Complete!
@@ -874,11 +793,7 @@ echo "   ✓ Form Validation Utilities"
 echo "   ✓ Theme System with Google Fonts"
 echo "   ✓ Splash Screen & Home Page"
 echo ""
-echo "💡 Tips:"
-echo "   • Add new features in lib/features/"
-echo "   • Use AppColors and AppSizes for consistency"
-echo "   • All widgets are reusable and customizable"
+echo "💡 Dependencies were added using 'flutter pub add' for compatibility!"
 echo ""
 echo -e "${CYAN}Happy Coding! 🎉${NC}"
 echo ""
-
