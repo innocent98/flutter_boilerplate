@@ -6,6 +6,21 @@ This is a **professional Flutter project generator** that creates production-rea
 
 ## ⚡ Quick Start
 
+### Option 1: Install Globally (Recommended)
+
+Install once, use anywhere:
+```bash
+cd flutter_boilerplate
+./install.sh
+```
+
+Then generate projects from anywhere:
+```bash
+flutter-gen
+```
+
+### Option 2: Direct Script Execution
+
 ```bash
 ./GENERATE_FLUTTER_APP.sh my_awesome_app
 ```
@@ -351,6 +366,13 @@ rm -rf my_app
 cd my_app
 flutter clean
 flutter pub get
+```
+
+### Uninstall global command
+If you want to remove the global command:
+```bash
+cd flutter_boilerplate
+./uninstall.sh
 ```
 
 ## 🚧 Roadmap
